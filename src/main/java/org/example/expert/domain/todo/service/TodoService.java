@@ -17,6 +17,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -48,20 +52,32 @@ public class TodoService {
         );
     }
 
-    public Page<TodoResponse> getTodos(int page, int size) {
+    public Page<TodoResponse> getTodos(int page, int size, String weather,
+                                       LocalDateTime startOfPeriod, LocalDateTime  endOfPeriod) {
         Pageable pageable = PageRequest.of(page - 1, size);
+
+        if (weather != null) {
+            Page<Todo> todos = todoRepository.findAllByWeatherOrderByModifiedAtDesc(pageable, weather);
+            return todosMapper(todos);
+        }
+
+        if (startOfPeriod != null && endOfPeriod != null) {
+            Page<Todo> todos = todoRepository.findAllByPeriodOrderByModifiedAtDesc(pageable, startOfPeriod, endOfPeriod);
+            return todosMapper(todos);
+
+        }
+        if (startOfPeriod != null && endOfPeriod == null) {
+            Page<Todo> todos = todoRepository.findAllByDateOrderByModifiedAtDesc(pageable, startOfPeriod);
+            return todosMapper(todos);
+        }
+        if (startOfPeriod == null && endOfPeriod != null) {
+            Page<Todo> todos = todoRepository.findAllByDateOrderByModifiedAtDesc(pageable, endOfPeriod);
+            return todosMapper(todos);
+        }
 
         Page<Todo> todos = todoRepository.findAllByOrderByModifiedAtDesc(pageable);
 
-        return todos.map(todo -> new TodoResponse(
-                todo.getId(),
-                todo.getTitle(),
-                todo.getContents(),
-                todo.getWeather(),
-                new UserResponse(todo.getUser().getId(), todo.getUser().getEmail()),
-                todo.getCreatedAt(),
-                todo.getModifiedAt()
-        ));
+        return todosMapper(todos);
     }
 
     public TodoResponse getTodo(long todoId) {
@@ -79,5 +95,17 @@ public class TodoService {
                 todo.getCreatedAt(),
                 todo.getModifiedAt()
         );
+    }
+
+    private Page<TodoResponse> todosMapper (Page<Todo> todos) {
+        return todos.map(todo -> new TodoResponse(
+                todo.getId(),
+                todo.getTitle(),
+                todo.getContents(),
+                todo.getWeather(),
+                new UserResponse(todo.getUser().getId(), todo.getUser().getEmail()),
+                todo.getCreatedAt(),
+                todo.getModifiedAt()
+        ));
     }
 }
