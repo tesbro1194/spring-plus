@@ -1,4 +1,4 @@
-package org.example.expert.config;
+package org.example.expert.config.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
