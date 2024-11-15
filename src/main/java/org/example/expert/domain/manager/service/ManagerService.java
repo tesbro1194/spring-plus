@@ -7,7 +7,9 @@ import org.example.expert.domain.manager.dto.request.ManagerSaveRequest;
 import org.example.expert.domain.manager.dto.response.ManagerResponse;
 import org.example.expert.domain.manager.dto.response.ManagerSaveResponse;
 import org.example.expert.domain.manager.entity.Manager;
+import org.example.expert.domain.manager.entity.MgrRegisterReqLog;
 import org.example.expert.domain.manager.repository.ManagerRepository;
+import org.example.expert.domain.manager.repository.MgrRegisterLogRepository;
 import org.example.expert.domain.todo.entity.Todo;
 import org.example.expert.domain.todo.repository.TodoRepository;
 import org.example.expert.domain.user.dto.response.UserResponse;
@@ -22,16 +24,14 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class ManagerService {
 
     private final ManagerRepository managerRepository;
     private final UserRepository userRepository;
     private final TodoRepository todoRepository;
+    private final MgrRegisterLogRepository mgrRegisterLogRepository;
 
-    @Transactional
     public ManagerSaveResponse saveManager(UserDetailsImpl userDetails, long todoId, ManagerSaveRequest managerSaveRequest) {
-        // 일정을 만든 유저
         User user = userDetails.getUser();
         Todo todo = todoRepository.findById(todoId)
                 .orElseThrow(() -> new InvalidRequestException("Todo not found"));
@@ -47,6 +47,9 @@ public class ManagerService {
             throw new InvalidRequestException("일정 작성자는 본인을 담당자로 등록할 수 없습니다.");
         }
 
+        String requestLog = managerSaveRequest.getRequestLog();
+        MgrRegisterReqLog savedRequestLog = mgrRegisterLogRepository.save(new MgrRegisterReqLog(requestLog));
+
         Manager newManagerUser = new Manager(managerUser, todo);
         Manager savedManagerUser = managerRepository.save(newManagerUser);
 
@@ -56,6 +59,7 @@ public class ManagerService {
         );
     }
 
+    @Transactional(readOnly = true)
     public List<ManagerResponse> getManagers(long todoId) {
         Todo todo = todoRepository.findById(todoId)
                 .orElseThrow(() -> new InvalidRequestException("Todo not found"));
