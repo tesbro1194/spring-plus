@@ -3,7 +3,9 @@ package org.example.expert.domain.todo.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.expert.config.security.UserDetailsImpl;
+import org.example.expert.domain.todo.dto.request.SearchTodoRequest;
 import org.example.expert.domain.todo.dto.request.TodoSaveRequest;
+import org.example.expert.domain.todo.dto.response.SearchTodoResponse;
 import org.example.expert.domain.todo.dto.response.TodoResponse;
 import org.example.expert.domain.todo.dto.response.TodoSaveResponse;
 import org.example.expert.domain.todo.service.TodoService;
@@ -42,5 +44,18 @@ public class TodoController {
     @GetMapping("/todos/{todoId}")
     public ResponseEntity<TodoResponse> getTodo(@PathVariable long todoId) {
         return ResponseEntity.ok(todoService.getTodo(todoId));
+    }
+
+    @GetMapping("todos/search")
+    public ResponseEntity<Page<SearchTodoResponse>> getTodosSearched(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) LocalDateTime startOfPeriod,
+            @RequestParam(required = false) LocalDateTime  endOfPeriod,
+            @RequestParam(required = false) String nickname
+    ) {
+        SearchTodoRequest request = new SearchTodoRequest(title, startOfPeriod, endOfPeriod, nickname);
+        return ResponseEntity.ok(todoService.getTodosSearched(page, size, request));
     }
 }

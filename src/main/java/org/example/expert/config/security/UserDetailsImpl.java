@@ -1,6 +1,5 @@
 package org.example.expert.config.security;
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.example.expert.domain.user.entity.User;
 import org.example.expert.domain.user.enums.UserRole;
@@ -10,7 +9,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 @RequiredArgsConstructor
 public class UserDetailsImpl implements UserDetails {
